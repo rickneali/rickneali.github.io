@@ -31,12 +31,6 @@ github_username:  rickneali
 theme: minima
 plugins:
   - jekyll-feed
-  - jekyll-titles-from-headings
-
-titles_from_headings:
-  enabled:     true
-  strip_title: true
-  collections: true
 
 # Exclude from processing.
 # The following items will not be processed, by default.
