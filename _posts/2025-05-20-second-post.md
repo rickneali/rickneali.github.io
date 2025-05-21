@@ -6,3 +6,13 @@ categories: jekyll update
 ---
 
 # Second Step
+
+For the second step, I've put this page up on GitHub pages!
+
+Figuring it out was easy! GitHub Pages makes it simple. 
+
+Now figuring out how to use git, that was the hard part. Still not too bad though! The cli has done away with username and password auth so instead I used VSCodes built in to push it over to the repo. Pretty neat.
+
+Next up, getting my domain to point to the page hosted on GitHub.
+
+Stay tuned!
