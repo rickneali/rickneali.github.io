@@ -5,8 +5,6 @@ date:   2025-05-19 15:59:55 -0500
 categories: jekyll update
 ---
 
-# The First Step
-
 I've finally setup my Surface Pro 6 with linux. I tried Arch, but honestly I was looking for something simple. So now it has Ubuntu and most things work out of the box! Maybe one day I'll go on ebay and get a Dell or something, but for now this is what I got.
 
 Now that I have jekyll setup, I can learn it. Starting with the basic template. Maybe I'll hate this template and try to learn another one. We'll see. For now. I'm going to learn this one.

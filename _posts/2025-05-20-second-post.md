@@ -1,11 +1,9 @@
 ---
 layout: post
 title:  "Second Step"
-date:   2025-05-20 23:00:59 -0500
+date:   2025-05-20 23:00:00 -0500
 categories: jekyll update
 ---
-
-# Second Step
 
 For the second step, I've put this page up on GitHub pages!
 
