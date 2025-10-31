@@ -1,6 +1,7 @@
+// Improved main.js
 // Store constants and elements we'll need
 const body = document.body;
-const nameToRepeat = "nick reali";
+const nameToRepeat = 'nick reali';
 
 // Define the list of available fonts we loaded in the <head>
 const fontFamilies = [
@@ -14,7 +15,9 @@ const fontFamilies = [
     "'Special Elite', monospace"
 ];
 
-// Adjust number of names based on screen size
+// Utilities
+const getRandom = (min, max) => Math.random() * (max - min) + min;
+
 const getOptimalNameCount = () => {
     const width = window.innerWidth;
     if (width <= 480) return 30;
@@ -22,169 +25,145 @@ const getOptimalNameCount = () => {
     return 60;
 };
 
-// Adjust animation timing based on device capability
 const getOptimalDelay = () => {
     return 'matchMedia' in window && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 100  // Slower for reduced motion preference
-        : 60;  // Default speed
+        ? 150
+        : 60;
 };
 
-const numberOfNames = getOptimalNameCount();
-const animationDelay = getOptimalDelay();
-
+let numberOfNames = getOptimalNameCount();
+let animationDelay = getOptimalDelay();
 let namesAdded = 0;
+let animationIntervalId = null;
 
-/**
- * Generates a random number between a min and max value.
- * @param {number} min - The minimum value.
- * @param {number} max - The maximum value.
- * @returns {number} A random number in the specified range.
- */
-function getRandom(min, max) {
-    return Math.random() * (max - min) + min;
+function getResponsiveFontSize() {
+    const width = window.innerWidth;
+    if (width <= 480) return getRandom(1, 3);
+    if (width <= 768) return getRandom(1.25, 3.5);
+    return getRandom(1.5, 4.5);
 }
 
-/**
- * Creates a single "Nick Reali" span and adds it
- * to a random spot on the page.
- */
 function createAndPlaceName() {
-    // 1. Create a new <span> element
     const span = document.createElement('span');
+    span.className = 'name-span';
     span.textContent = nameToRepeat;
-    span.classList.add('name-span');
+    span.setAttribute('aria-hidden', 'true');
+    span.setAttribute('title', nameToRepeat);
 
-    // 2. Generate random properties
-    
-    // Random position (x and y) using viewport units
-    const x = getRandom(0, 100); // 0% to 100% of viewport width
-    const y = getRandom(0, 100); // 0% to 100% of viewport height
-
-    // Random rotation
-    const rotation = getRandom(-90, 90); // Between -90 and +90 degrees
-
-    // Responsive font size based on viewport
-    const getResponsiveFontSize = () => {
-        const width = window.innerWidth;
-        if (width <= 480) {
-            return getRandom(1, 3);
-        } else if (width <= 768) {
-            return getRandom(1.25, 3.5);
-        }
-        return getRandom(1.5, 4.5);
-    };
+    // Padding so text doesn't overflow off edges
+    const padding = 8; // percent
+    const x = getRandom(padding, 100 - padding);
+    const y = getRandom(padding, 100 - padding);
+    const rotation = getRandom(-90, 90);
     const fontSize = getResponsiveFontSize();
-
-    // Random color using HSL with mobile-optimized contrast
     const hue = getRandom(0, 360);
-    const saturation = getRandom(80, 100); // Increased for better visibility on mobile
-    const lightness = getRandom(55, 75); // Adjusted for better contrast
+    const saturation = getRandom(72, 96);
+    const lightness = getRandom(52, 74);
     const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    
-    // Randomly select one of the defined fonts
-    const randomFontIndex = Math.floor(getRandom(0, fontFamilies.length));
-    const fontFamily = fontFamilies[randomFontIndex];
+    const fontFamily = fontFamilies[Math.floor(getRandom(0, fontFamilies.length))];
 
-    // 3. Apply the random styles to the span
     span.style.left = `${x}vw`;
     span.style.top = `${y}vh`;
     span.style.fontSize = `${fontSize}rem`;
     span.style.color = color;
-    // Apply the random font family
     span.style.fontFamily = fontFamily;
-    // Store rotation as a CSS variable for use in both base and :hover states
     span.style.setProperty('--rotation', `${rotation}deg`);
-    
-    // 4. Add the new span to the page
+
+    // Bring tapped element forward slightly on pointerdown, but keep it below the FAB
+    span.addEventListener('pointerdown', (e) => {
+        // Use a high-but-not-top z-index so the FAB (z-index:2000) remains clickable
+        span.style.zIndex = 1500;
+    });
+    // Restore z-index after pointerup so other hover actions still work
+    span.addEventListener('pointerup', () => {
+        setTimeout(() => { span.style.zIndex = ''; }, 600);
+    });
+
     body.appendChild(span);
 }
 
-// Wait for the page to load before running the script
-window.onload = function() {
-    // This interval will run the code inside it every `animationDelay` milliseconds
-    const addNameInterval = setInterval(() => {
-        
+function startAddingNames() {
+    if (animationIntervalId) return;
+    // (recompute in case of resize)
+    numberOfNames = getOptimalNameCount();
+    animationDelay = getOptimalDelay();
+    animationIntervalId = setInterval(() => {
         if (namesAdded < numberOfNames) {
-            // If we haven't added all the names, add one...
             createAndPlaceName();
-            namesAdded++; // ...and increment the counter
+            namesAdded++;
         } else {
-            // Once all names are added, stop the interval
-            clearInterval(addNameInterval);
+            clearInterval(animationIntervalId);
+            animationIntervalId = null;
         }
-
     }, animationDelay);
-};
+}
 
-/**
- * Creates a single "Nick Reali" span and adds it
- * to a random spot on the page.
- */
-function createAndPlaceName() {
-    // 1. Create a new <span> element
-    const span = document.createElement('span');
-    span.textContent = nameToRepeat;
-    span.classList.add('name-span');
+function stopAddingNames() {
+    if (!animationIntervalId) return;
+    clearInterval(animationIntervalId);
+    animationIntervalId = null;
+}
 
-    // 2. Generate random properties
-    
-    // Random position (x and y) using viewport units with padding to prevent overflow
-    const padding = 10; // Keep names 10% away from edges
-    const x = getRandom(padding, 100 - padding); // Ensure names don't overflow horizontally
-    const y = getRandom(padding, 100 - padding); // Ensure names don't overflow vertically
+function clearNames() {
+    document.querySelectorAll('.name-span').forEach(n => n.remove());
+    namesAdded = 0;
+}
 
-    // Random rotation
-    const rotation = getRandom(-90, 90); // Between -90 and +90 degrees
+// Wire up page controls after DOM ready
+window.addEventListener('DOMContentLoaded', () => {
+    // Floating action button that clears names (trash) or restarts (refresh)
+    let fab = document.getElementById('fab-toggle');
+    let fabIcon = document.getElementById('fab-icon');
 
-    // Responsive font size based on viewport
-    const getResponsiveFontSize = () => {
-        const width = window.innerWidth;
-        if (width <= 480) {
-            return getRandom(1, 3);
-        } else if (width <= 768) {
-            return getRandom(1.25, 3.5);
-        }
-        return getRandom(1.5, 4.5);
+    // SVG for refresh icon
+    const refreshSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.14-3.36L23 10"></path><path d="M20.49 15a9 9 0 0 1-14.14 3.36L1 14"></path></svg>';
+    const trashSVG = fabIcon ? fabIcon.outerHTML : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>';
+
+    const setFabToTrash = () => {
+        if (!fab) return;
+        fab.innerHTML = trashSVG;
+        fab.setAttribute('aria-label', 'Clear names');
+        fab.setAttribute('title', 'Clear names');
     };
-    const fontSize = getResponsiveFontSize();
 
-    // Random color using HSL with mobile-optimized contrast
-    const hue = getRandom(0, 360);
-    const saturation = getRandom(80, 100); // Increased for better visibility on mobile
-    const lightness = getRandom(55, 75); // Adjusted for better contrast
-    const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    
-    // Randomly select one of the defined fonts
-    const randomFontIndex = Math.floor(getRandom(0, fontFamilies.length));
-    const fontFamily = fontFamilies[randomFontIndex];
+    const setFabToRefresh = () => {
+        if (!fab) return;
+        fab.innerHTML = refreshSVG;
+        fab.setAttribute('aria-label', 'Start names');
+        fab.setAttribute('title', 'Start names');
+    };
 
-    // 3. Apply the random styles to the span
-    span.style.left = `${x}vw`;
-    span.style.top = `${y}vh`;
-    span.style.fontSize = `${fontSize}rem`;
-    span.style.color = color;
-    // Apply the random font family
-    span.style.fontFamily = fontFamily;
-    // Store rotation as a CSS variable for use in both base and :hover states
-    span.style.setProperty('--rotation', `${rotation}deg`);
-    
-    // 4. Add the new span to the page
-    body.appendChild(span);
-}
+    // Ensure the FAB exists. If not found (for whatever reason), create it so controls still work.
+    if (!fab) {
+        fab = document.createElement('button');
+        fab.id = 'fab-toggle';
+        fab.className = 'fab';
+        document.body.appendChild(fab);
+    }
+    // Ensure we have the correct icon inside the FAB element reference
+    fabIcon = document.getElementById('fab-icon');
 
-// Wait for the page to load before running the script
-window.onload = function() {
-    // This interval will run the code inside it every `animationDelay` milliseconds
-    const addNameInterval = setInterval(() => {
-        
-        if (namesAdded < numberOfNames) {
-            // If we haven't added all the names, add one...
-            createAndPlaceName();
-            namesAdded++; // ...and increment the counter
+    // Start animation by default
+    startAddingNames();
+    setFabToTrash();
+
+    fab.addEventListener('click', () => {
+        // Decide by presence of name elements rather than relying solely on the interval id.
+        const hasNames = document.querySelectorAll('.name-span').length > 0;
+        if (hasNames) {
+            // If names exist, clear them and stop any running animation
+            stopAddingNames();
+            clearNames();
+            setFabToRefresh();
         } else {
-            // Once all names are added, stop the interval
-            clearInterval(addNameInterval);
+            // If no names present, start adding names again
+            startAddingNames();
+            setFabToTrash();
         }
+    });
 
-    }, animationDelay);
-};
+    // Recompute on resize
+    window.addEventListener('resize', () => {
+        numberOfNames = getOptimalNameCount();
+    });
+});

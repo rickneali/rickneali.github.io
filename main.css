@@ -34,9 +34,9 @@ html, body {
     /* A dark background makes the colors pop */
     background-color: #1a1a1a;
     /* Hide scrollbars that might appear from rotated text */
-    overflow: hidden;
-    /* Prevent bouncing/scrolling on iOS */
-    position: fixed;
+    overflow: hidden; /* keep names inside viewport */
+    /* avoid position:fixed so the site can be accessible and responsive */
+    position: relative;
     /* Prevent text selection on mobile */
     -webkit-user-select: none;
     user-select: none;
@@ -58,6 +58,45 @@ html, body {
     z-index: 1;
     /* Better touch target size */
     padding: calc(var(--base-spacing) / 2);
+}
+
+/* Respect reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .name-span {
+        transition: none;
+    }
+}
+
+/* Floating action button (bottom-right) */
+.fab {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #fff;
+    /* Very high z-index so transformed/stacked name spans cannot cover it */
+    z-index: 2147483647;
+    pointer-events: auto;
+    cursor: pointer;
+    padding: 6px;
+    backdrop-filter: blur(6px);
+}
+
+.fab:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+.fab svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
 }
 
 /* Hover and touch effects! */
