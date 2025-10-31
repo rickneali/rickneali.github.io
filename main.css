@@ -108,9 +108,28 @@ html, body {
     cursor: pointer; /* Indicate it's interactive */
 }
 
+/* Persistent selected state (click/tap/keyboard) mirrors hover */
+.name-span.selected {
+    transform: translate(-50%, -50%) scale(1.15) rotate(var(--rotation));
+    opacity: 1;
+    z-index: 1500; /* keep below the FAB but above other names */
+    cursor: pointer;
+}
+
 /* Optimized outline effect for different screen sizes */
 @media (min-width: 769px) {
     .name-span:hover {
+        text-shadow: 
+            -1px -1px 0 #fff,  
+             1px -1px 0 #fff,
+            -1px  1px 0 #fff,
+             1px  1px 0 #fff,
+            -2px -2px 0 #fff,  
+             2px -2px 0 #fff,
+            -2px  2px 0 #fff,
+             2px  2px 0 #fff;
+    }
+    .name-span.selected {
         text-shadow: 
             -1px -1px 0 #fff,  
              1px -1px 0 #fff,
@@ -125,6 +144,17 @@ html, body {
 
 @media (max-width: 768px) {
     .name-span:active {
+        text-shadow: 
+            -0.5px -0.5px 0 #fff,  
+             0.5px -0.5px 0 #fff,
+            -0.5px  0.5px 0 #fff,
+             0.5px  0.5px 0 #fff,
+            -1px -1px 0 #fff,  
+             1px -1px 0 #fff,
+            -1px  1px 0 #fff,
+             1px  1px 0 #fff;
+    }
+    .name-span.selected {
         text-shadow: 
             -0.5px -0.5px 0 #fff,  
              0.5px -0.5px 0 #fff,

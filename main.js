@@ -47,7 +47,10 @@ function createAndPlaceName() {
     const span = document.createElement('span');
     span.className = 'name-span';
     span.textContent = nameToRepeat;
-    span.setAttribute('aria-hidden', 'true');
+    // Make each name focusable and interactive for accessibility
+    span.setAttribute('tabindex', '0');
+    span.setAttribute('role', 'button');
+    span.setAttribute('aria-pressed', 'false');
     span.setAttribute('title', nameToRepeat);
 
     // Padding so text doesn't overflow off edges
@@ -74,9 +77,50 @@ function createAndPlaceName() {
         // Use a high-but-not-top z-index so the FAB (z-index:2000) remains clickable
         span.style.zIndex = 1500;
     });
-    // Restore z-index after pointerup so other hover actions still work
+    // Restore z-index after pointerup so other hover actions still work,
+    // but if the element has been "selected" keep its elevated z-index.
     span.addEventListener('pointerup', () => {
-        setTimeout(() => { span.style.zIndex = ''; }, 600);
+        setTimeout(() => {
+            if (!span.classList.contains('selected')) {
+                span.style.zIndex = '';
+            }
+        }, 600);
+    });
+
+    // Toggle a persistent "selected" state on click/tap. This mirrors :hover styles.
+    span.addEventListener('click', (e) => {
+        // If there's another selected name, deselect it first
+        const prev = document.querySelector('.name-span.selected');
+        if (prev && prev !== span) {
+            prev.classList.remove('selected');
+            prev.setAttribute('aria-pressed', 'false');
+            prev.style.zIndex = '';
+        }
+
+        // Toggle this span
+        const isSelected = span.classList.toggle('selected');
+        span.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        if (isSelected) span.style.zIndex = 1500;
+        else span.style.zIndex = '';
+    });
+
+    // Keyboard support: Enter or Space toggles selection and follows same single-selection logic
+    span.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.code === 'Space') {
+            e.preventDefault();
+
+            const prev = document.querySelector('.name-span.selected');
+            if (prev && prev !== span) {
+                prev.classList.remove('selected');
+                prev.setAttribute('aria-pressed', 'false');
+                prev.style.zIndex = '';
+            }
+
+            const isSelected = span.classList.toggle('selected');
+            span.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+            if (isSelected) span.style.zIndex = 1500;
+            else span.style.zIndex = '';
+        }
     });
 
     body.appendChild(span);
